@@ -182,6 +182,10 @@ const config = {
   transitionMs:         1_200,    // crossfade duration in ms
   overlayOpacity:       0.25,     // 0 = no overlay, 1 = black screen
   hour24:               true,     // false = 12h clock
+
+  // Google Drive — folder must be shared "Anyone with link can view"
+  driveFolder: '1qGIlmBJVUC3l3X4LeiL_0294giH3cq0M',
+  driveApiKey:  'AIzaSyBwV_t9bdHuVM_plx_1fWmqagf8IMi9h2A',
 };
 
 // ── Bootstrap ──────────────────────────────────────────
@@ -189,7 +193,7 @@ const config = {
   applyOverlay();
 
   const [backgrounds, quotes] = await Promise.all([
-    fetchJSON('/data/backgrounds.json').catch(() => []),
+    fetchDriveImages(config.driveFolder, config.driveApiKey).catch(() => []),
     fetchJSON('/data/quotes.json').catch(() => []),
   ]);
 
@@ -289,6 +293,21 @@ function startQuotes(list) {
       wrap.style.opacity = '1';
     }, 700);
   }, config.quoteIntervalMs);
+}
+
+// ── Google Drive ─────────────────────────────────────────
+async function fetchDriveImages(folderId, apiKey) {
+  const q      = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/' and trashed = false`);
+  const fields = encodeURIComponent('files(id,name)');
+  const url    = `https://www.googleapis.com/drive/v3/files?q=${q}&key=${apiKey}&fields=${fields}&orderBy=name&pageSize=100`;
+
+  const res  = await fetch(url);
+  if (!res.ok) throw new Error(`Drive API ${res.status}`);
+  const data = await res.json();
+
+  return (data.files || []).map(f =>
+    `https://drive.google.com/thumbnail?id=${f.id}&sz=w3840`
+  );
 }
 
 // ── Helpers ──────────────────────────────────────────────
