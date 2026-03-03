@@ -9,55 +9,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Raleway:wght@200;300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
     }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       overflow: hidden;
+      background: #0b0d14; /* fallback while images load */
     }
 
-    /* ── Background ──────────────────────────────────
-       To use a custom image, set BACKGROUND in CONFIG.
-       Default: deep atmospheric gradient.              */
-    #bg {
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 120% 80% at 70% 20%, rgba(14, 18, 30, 0.7) 0%, transparent 60%),
-        radial-gradient(ellipse 80% 100% at 20% 90%, rgba(10, 12, 20, 0.8) 0%, transparent 55%),
-        linear-gradient(160deg, #0b0d14 0%, #0d0d0f 45%, #090909 100%);
-      background-size: cover;
-      background-position: center;
+    /* ── Background layers (crossfade) ─────────── */
+    .bg-layer {
+      position: fixed; inset: 0;
+      background: center / cover no-repeat;
+      opacity: 0;
       z-index: 0;
     }
 
-    /* Soft vignette */
-    #bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        ellipse 100% 100% at 50% 50%,
-        transparent 30%,
-        rgba(0, 0, 0, 0.55) 100%
-      );
+    /* ── Dark overlay ───────────────────────────── */
+    #overlay {
+      position: fixed; inset: 0;
+      z-index: 1;
+      pointer-events: none;
     }
 
-    /* ── Content ─────────────────────────────────── */
+    /* ── Vignette ───────────────────────────────── */
+    #vignette {
+      position: fixed; inset: 0;
+      background: radial-gradient(
+        ellipse 100% 100% at 50% 50%,
+        transparent 25%,
+        rgba(0, 0, 0, 0.6) 100%
+      );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── Content ────────────────────────────────── */
     #app {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
       padding-bottom: 9vw;
-      z-index: 1;
+      z-index: 3;
       animation: appear 2s ease both;
     }
 
@@ -66,7 +64,7 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Clock ───────────────────────────────────── */
+    /* ── Clock ──────────────────────────────────── */
     .clock-row {
       display: flex;
       align-items: baseline;
@@ -77,7 +75,7 @@
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-weight: 300;
       font-size: 18vw;
-      color: rgba(220, 212, 200, 0.92);
+      color: rgba(228, 220, 208, 0.93);
       letter-spacing: -0.02em;
       line-height: 1;
     }
@@ -86,7 +84,7 @@
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-weight: 300;
       font-size: 18vw;
-      color: rgba(220, 212, 200, 0.92);
+      color: rgba(228, 220, 208, 0.93);
       letter-spacing: -0.02em;
       line-height: 1;
       margin: 0 0.25vw;
@@ -94,34 +92,34 @@
     }
 
     @keyframes blink {
-      0%, 49% { opacity: 0.92; }
+      0%, 49% { opacity: 0.93; }
       50%, 100% { opacity: 0.08; }
     }
 
-    /* ── Date ────────────────────────────────────── */
-    .date-row {
+    /* ── Date ───────────────────────────────────── */
+    #el-date {
       margin-top: 1.2vw;
       font-family: 'Raleway', sans-serif;
       font-weight: 200;
       font-size: 0.95vw;
       letter-spacing: 0.55em;
       text-transform: uppercase;
-      color: rgba(160, 150, 136, 0.7);
+      color: rgba(168, 158, 142, 0.72);
       user-select: none;
     }
 
-    /* ── Divider ─────────────────────────────────── */
+    /* ── Divider ────────────────────────────────── */
     .divider {
-      width: 6vw;
-      height: 1px;
-      background: linear-gradient(to right, transparent, rgba(120, 110, 95, 0.35), transparent);
+      width: 6vw; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(130, 118, 100, 0.3), transparent);
       margin: 3vw 0;
     }
 
-    /* ── Quote ───────────────────────────────────── */
-    .quote-wrap {
+    /* ── Quote ──────────────────────────────────── */
+    #quote-wrap {
       text-align: center;
-      max-width: 42vw;
+      max-width: 44vw;
+      transition: opacity 0.7s ease;
     }
 
     #el-quote {
@@ -130,7 +128,7 @@
       font-weight: 300;
       font-size: 2vw;
       line-height: 1.55;
-      color: rgba(180, 170, 156, 0.65);
+      color: rgba(185, 174, 158, 0.68);
       letter-spacing: 0.01em;
     }
 
@@ -141,94 +139,170 @@
       font-size: 0.72vw;
       letter-spacing: 0.45em;
       text-transform: uppercase;
-      color: rgba(100, 93, 82, 0.6);
+      color: rgba(108, 98, 85, 0.62);
+      min-height: 1em; /* prevent layout shift when empty */
     }
   </style>
 </head>
 <body>
 
-<div id="bg"></div>
+<!-- Background layers -->
+<div id="bg-0" class="bg-layer"></div>
+<div id="bg-1" class="bg-layer"></div>
 
+<!-- Overlays -->
+<div id="overlay"></div>
+<div id="vignette"></div>
+
+<!-- Content -->
 <div id="app">
-
-  <!-- Clock -->
   <div class="clock-row">
     <span class="clock-digits" id="el-h">00</span>
     <span class="clock-sep">:</span>
     <span class="clock-digits" id="el-m">00</span>
   </div>
 
-  <!-- Date -->
-  <div class="date-row" id="el-date">Monday · January 1 · 2026</div>
+  <div id="el-date">Monday · January 1 · 2026</div>
 
-  <!-- Divider -->
   <div class="divider"></div>
 
-  <!-- Quote -->
-  <div class="quote-wrap">
+  <div id="quote-wrap">
     <div id="el-quote"></div>
     <div id="el-author"></div>
   </div>
-
 </div>
 
 <script>
-// ┌──────────────────────────────────────────────────────────┐
-// │  CONFIG                                                  │
-// └──────────────────────────────────────────────────────────┘
-const CONFIG = {
-
-  // Background image URL — paste any direct image link here.
-  // Leave empty ('') to use the default dark gradient.
-  // Example: 'https://images.unsplash.com/photo-abc?w=1920'
-  BACKGROUND: '',
-
-  // Your quote
-  QUOTE: 'The secret of getting ahead is getting started.',
-
-  // Attribution — leave empty to hide
-  AUTHOR: 'Mark Twain',
-
-  // Clock format: true = 24h, false = 12h
-  HOUR_24: true,
-
+// ┌──────────────────────────────────────────────────────┐
+// │  config.js — timing and display settings             │
+// └──────────────────────────────────────────────────────┘
+const config = {
+  quoteIntervalMs:      180_000,  // rotate quote every 3 min
+  backgroundIntervalMs: 600_000,  // rotate background every 10 min
+  transitionMs:         1_200,    // crossfade duration in ms
+  overlayOpacity:       0.25,     // 0 = no overlay, 1 = black screen
+  hour24:               true,     // false = 12h clock
 };
-// ──────────────────────────────────────────────────────────
 
-// Apply background image if set
-if (CONFIG.BACKGROUND) {
-  document.getElementById('bg').style.background =
-    `url('${CONFIG.BACKGROUND}') center/cover no-repeat`;
+// ── Bootstrap ──────────────────────────────────────────
+(async function init() {
+  applyOverlay();
+
+  const [backgrounds, quotes] = await Promise.all([
+    fetchJSON('/data/backgrounds.json').catch(() => []),
+    fetchJSON('/data/quotes.json').catch(() => []),
+  ]);
+
+  const enabledQuotes = quotes.filter(q => q.enabled !== false);
+
+  startClock();
+  startBackgrounds(backgrounds);
+  startQuotes(enabledQuotes);
+})();
+
+// ── Overlay ─────────────────────────────────────────────
+function applyOverlay() {
+  document.getElementById('overlay').style.background =
+    `rgba(0,0,0,${config.overlayOpacity})`;
 }
 
-// Inject quote
-document.getElementById('el-quote').textContent = `\u201C${CONFIG.QUOTE}\u201D`;
-if (CONFIG.AUTHOR) {
-  document.getElementById('el-author').textContent = `\u2014\u2002${CONFIG.AUTHOR}`;
-}
-
-// ── Clock ──────────────────────────────────────────────────
-const elH    = document.getElementById('el-h');
-const elM    = document.getElementById('el-m');
-const elDate = document.getElementById('el-date');
-
+// ── Clock ────────────────────────────────────────────────
 const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June',
                 'July','August','September','October','November','December'];
 
-function tick() {
-  const now = new Date();
-  let h = now.getHours();
-  if (!CONFIG.HOUR_24) h = h % 12 || 12;
+function startClock() {
+  function tick() {
+    const now = new Date();
+    let h = now.getHours();
+    if (!config.hour24) h = h % 12 || 12;
 
-  elH.textContent = String(h).padStart(2, '0');
-  elM.textContent = String(now.getMinutes()).padStart(2, '0');
-  elDate.textContent =
-    `${DAYS[now.getDay()]}  ·  ${MONTHS[now.getMonth()]} ${now.getDate()}  ·  ${now.getFullYear()}`;
+    document.getElementById('el-h').textContent = String(h).padStart(2, '0');
+    document.getElementById('el-m').textContent = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('el-date').textContent =
+      `${DAYS[now.getDay()]}  ·  ${MONTHS[now.getMonth()]} ${now.getDate()}  ·  ${now.getFullYear()}`;
+  }
+  tick();
+  setInterval(tick, 1000);
 }
 
-tick();
-setInterval(tick, 1000);
+// ── Backgrounds ──────────────────────────────────────────
+function startBackgrounds(list) {
+  if (!list.length) return; // stay on CSS fallback gradient
+
+  const layers   = [document.getElementById('bg-0'), document.getElementById('bg-1')];
+  const duration = `${config.transitionMs}ms`;
+  layers.forEach(l => l.style.transition = `opacity ${duration} ease`);
+
+  let active = 0;
+  let index  = 0;
+
+  // Show first image (fade in from dark)
+  preload(list[0], () => {
+    layers[0].style.backgroundImage = `url('${list[0]}')`;
+    layers[0].style.opacity = '1';
+    // Preload second in background
+    if (list.length > 1) preload(list[1]);
+  });
+
+  if (list.length < 2) return; // nothing to rotate
+
+  setInterval(() => {
+    index = (index + 1) % list.length;
+    const next = 1 - active;
+
+    preload(list[index], () => {
+      layers[next].style.backgroundImage = `url('${list[index]}')`;
+      layers[active].style.opacity = '0';
+      layers[next].style.opacity   = '1';
+      active = next;
+
+      // Preload the one after next
+      preload(list[(index + 1) % list.length]);
+    });
+  }, config.backgroundIntervalMs);
+}
+
+// ── Quotes ───────────────────────────────────────────────
+function startQuotes(list) {
+  if (!list.length) return;
+
+  const wrap   = document.getElementById('quote-wrap');
+  const elText = document.getElementById('el-quote');
+  const elAuth = document.getElementById('el-author');
+  let index    = 0;
+
+  function show(q) {
+    elText.textContent = `\u201C${q.text}\u201D`;
+    elAuth.textContent = q.author ? `\u2014\u2002${q.author}` : '';
+  }
+
+  show(list[0]);
+
+  if (list.length < 2) return;
+
+  setInterval(() => {
+    wrap.style.opacity = '0';
+    setTimeout(() => {
+      index = (index + 1) % list.length;
+      show(list[index]);
+      wrap.style.opacity = '1';
+    }, 700);
+  }, config.quoteIntervalMs);
+}
+
+// ── Helpers ──────────────────────────────────────────────
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${res.status} ${url}`);
+  return res.json();
+}
+
+function preload(src, cb) {
+  const img = new Image();
+  if (cb) img.onload = cb;
+  img.src = src;
+}
 </script>
 
 </body>
