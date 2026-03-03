@@ -132,6 +132,16 @@
       letter-spacing: 0.01em;
     }
 
+    /* ── Skip button ────────────────────────────── */
+    #skip-bg {
+      position: fixed;
+      top: 0; right: 0;
+      width: 14vw;
+      height: 14vw;
+      z-index: 20;
+      cursor: pointer;
+    }
+
     #el-author {
       margin-top: 1.1vw;
       font-family: 'Raleway', sans-serif;
@@ -153,6 +163,9 @@
 <!-- Overlays -->
 <div id="overlay"></div>
 <div id="vignette"></div>
+
+<!-- Skip button: tap top-right corner to advance background -->
+<div id="skip-bg"></div>
 
 <!-- Content -->
 <div id="app">
@@ -251,7 +264,7 @@ function startBackgrounds(list) {
 
   if (list.length < 2) return; // nothing to rotate
 
-  setInterval(() => {
+  function advance() {
     index = (index + 1) % list.length;
     const next = 1 - active;
 
@@ -261,10 +274,12 @@ function startBackgrounds(list) {
       layers[next].style.opacity   = '1';
       active = next;
 
-      // Preload the one after next
       preload(list[(index + 1) % list.length]);
     });
-  }, config.backgroundIntervalMs);
+  }
+
+  setInterval(advance, config.backgroundIntervalMs);
+  document.getElementById('skip-bg').addEventListener('click', advance);
 }
 
 // ── Quotes ───────────────────────────────────────────────
