@@ -101,7 +101,7 @@
       margin-top: 1.2vw;
       font-family: 'Raleway', sans-serif;
       font-weight: 200;
-      font-size: 0.95vw;
+      font-size: 1.4vw;
       letter-spacing: 0.55em;
       text-transform: uppercase;
       color: rgba(168, 158, 142, 0.72);
@@ -118,7 +118,7 @@
     /* ── Quote ──────────────────────────────────── */
     #quote-wrap {
       text-align: center;
-      max-width: 44vw;
+      max-width: 52vw;
       transition: opacity 0.7s ease;
     }
 
@@ -126,7 +126,7 @@
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-style: italic;
       font-weight: 300;
-      font-size: 2vw;
+      font-size: 2.6vw;
       line-height: 1.55;
       color: rgba(185, 174, 158, 0.68);
       letter-spacing: 0.01em;
@@ -146,7 +146,7 @@
       margin-top: 1.1vw;
       font-family: 'Raleway', sans-serif;
       font-weight: 200;
-      font-size: 0.72vw;
+      font-size: 1.1vw;
       letter-spacing: 0.45em;
       text-transform: uppercase;
       color: rgba(108, 98, 85, 0.62);
@@ -195,6 +195,7 @@ const config = {
   transitionMs:         1_200,    // crossfade duration in ms
   overlayOpacity:       0.25,     // 0 = no overlay, 1 = black screen
   hour24:               true,     // false = 12h clock
+  shuffleQuotes:        true,     // true = random order, false = sequential
 
   // Google Drive — folder must be shared "Anyone with link can view"
   driveFolder: '1qGIlmBJVUC3l3X4LeiL_0294giH3cq0M',
@@ -296,6 +297,15 @@ function startQuotes(list) {
     elAuth.textContent = q.author ? `\u2014\u2002${q.author}` : '';
   }
 
+  function nextIndex() {
+    if (config.shuffleQuotes) {
+      let next;
+      do { next = Math.floor(Math.random() * list.length); } while (next === index && list.length > 1);
+      return next;
+    }
+    return (index + 1) % list.length;
+  }
+
   show(list[0]);
 
   if (list.length < 2) return;
@@ -303,7 +313,7 @@ function startQuotes(list) {
   setInterval(() => {
     wrap.style.opacity = '0';
     setTimeout(() => {
-      index = (index + 1) % list.length;
+      index = nextIndex();
       show(list[index]);
       wrap.style.opacity = '1';
     }, 700);
