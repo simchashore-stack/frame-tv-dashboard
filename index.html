@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frame Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&family=Raleway:wght@200;300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090909;
+    }
+
+    /* Radial vignette */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        ellipse 90% 90% at 50% 50%,
+        transparent 15%,
+        rgba(0, 0, 0, 0.65) 100%
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      animation: appear 2.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(1.5vw); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Clock ─────────────────────────────────── */
+    .clock-row {
+      display: flex;
+      align-items: baseline;
+      user-select: none;
+    }
+
+    .clock-digits {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      font-size: 21vw;
+      color: #dcd6cd;
+      letter-spacing: -0.025em;
+      line-height: 0.85;
+    }
+
+    .clock-sep {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      font-size: 21vw;
+      color: #dcd6cd;
+      letter-spacing: -0.025em;
+      line-height: 0.85;
+      animation: blink 2s step-end infinite;
+      margin: 0 0.3vw;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0.1; }
+    }
+
+    /* ─── Date ──────────────────────────────────── */
+    .date-row {
+      margin-top: 2vw;
+      text-align: center;
+      user-select: none;
+    }
+
+    #el-weekday {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: 1.05vw;
+      letter-spacing: 0.62em;
+      text-transform: uppercase;
+      color: #6b6358;
+    }
+
+    #el-date {
+      margin-top: 0.6vw;
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: 0.85vw;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: #47443e;
+    }
+
+    /* ─── Ornament divider ───────────────────────── */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 1.3vw;
+      margin: 3.4vw 0;
+      user-select: none;
+    }
+
+    .ornament-line {
+      width: 7.5vw;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #2d2b26 65%, transparent);
+    }
+
+    .ornament-line.rev {
+      transform: scaleX(-1);
+    }
+
+    .ornament-diamond {
+      width: 5px;
+      height: 5px;
+      background: #312e29;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* ─── Weather ────────────────────────────────── */
+    #weather-status {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: 0.85vw;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: #3d3a36;
+    }
+
+    .weather-loaded {
+      display: none;
+      align-items: center;
+      gap: 2.4vw;
+    }
+
+    .weather-loaded.visible {
+      display: flex;
+    }
+
+    #weather-icon {
+      width: 4.4vw;
+      height: 4.4vw;
+      object-fit: contain;
+      filter: saturate(0.2) brightness(0.78);
+      opacity: 0.9;
+    }
+
+    #weather-temp {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      font-size: 5.4vw;
+      color: #b2aba0;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .temp-unit {
+      font-size: 2.1vw;
+      vertical-align: super;
+      color: #6e6760;
+      margin-left: 0.05em;
+    }
+
+    .weather-vline {
+      width: 1px;
+      height: 3vw;
+      background: linear-gradient(to bottom, transparent, #2a2724, transparent);
+    }
+
+    .weather-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6vw;
+    }
+
+    #weather-cond {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: 0.95vw;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: #5c5850;
+    }
+
+    #weather-loc {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: 0.75vw;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: #3b3936;
+    }
+
+    #weather-extra {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: 0.7vw;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #302e2b;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Clock -->
+  <div class="clock-row">
+    <span class="clock-digits" id="el-h">00</span>
+    <span class="clock-sep">:</span>
+    <span class="clock-digits" id="el-m">00</span>
+  </div>
+
+  <!-- Date -->
+  <div class="date-row">
+    <div id="el-weekday">Monday</div>
+    <div id="el-date">January 1 &nbsp;·&nbsp; 2026</div>
+  </div>
+
+  <!-- Ornament divider -->
+  <div class="ornament">
+    <div class="ornament-line"></div>
+    <div class="ornament-diamond"></div>
+    <div class="ornament-line rev"></div>
+  </div>
+
+  <!-- Weather -->
+  <div id="weather-status">retrieving weather…</div>
+  <div class="weather-loaded" id="weather-loaded">
+    <img id="weather-icon" src="" alt="weather">
+    <div id="weather-temp">—</div>
+    <div class="weather-vline"></div>
+    <div class="weather-info">
+      <div id="weather-cond">—</div>
+      <div id="weather-loc">—</div>
+      <div id="weather-extra">—</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ┌──────────────────────────────────────────────────────┐
+// │  CONFIG — edit this section before deploying         │
+// └──────────────────────────────────────────────────────┘
+const CONFIG = {
+  API_KEY:       'YOUR_API_KEY_HERE', // ← get a free key at openweathermap.org
+  FALLBACK_CITY: 'London',            // ← city used if geolocation is denied
+  UNITS:         'metric',            // 'metric' (°C)  or  'imperial' (°F)
+  REFRESH_MS:    10 * 60 * 1000,      // weather refresh — every 10 minutes
+  HOUR_24:       true,                // false = 12-hour clock with AM/PM
+};
+// ─────────────────────────────────────────────────────────
+
+// ── Clock ──────────────────────────────────────────────
+const elH       = document.getElementById('el-h');
+const elM       = document.getElementById('el-m');
+const elWeekday = document.getElementById('el-weekday');
+const elDate    = document.getElementById('el-date');
+
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+function tick() {
+  const now = new Date();
+  let h = now.getHours();
+  if (!CONFIG.HOUR_24) h = h % 12 || 12;
+
+  elH.textContent = String(h).padStart(2, '0');
+  elM.textContent = String(now.getMinutes()).padStart(2, '0');
+  elWeekday.textContent = DAYS[now.getDay()];
+  elDate.textContent = `${MONTHS[now.getMonth()]} ${now.getDate()}  ·  ${now.getFullYear()}`;
+}
+
+tick();
+setInterval(tick, 1000);
+
+// ── Weather ────────────────────────────────────────────
+const elStatus = document.getElementById('weather-status');
+const elLoaded = document.getElementById('weather-loaded');
+const elIcon   = document.getElementById('weather-icon');
+const elTemp   = document.getElementById('weather-temp');
+const elCond   = document.getElementById('weather-cond');
+const elLoc    = document.getElementById('weather-loc');
+const elExtra  = document.getElementById('weather-extra');
+
+function setStatus(msg) {
+  elStatus.textContent = msg;
+  elStatus.style.display = '';
+  elLoaded.classList.remove('visible');
+}
+
+function render(d) {
+  const sym      = CONFIG.UNITS === 'metric' ? '°C' : '°F';
+  const temp     = Math.round(d.main.temp);
+  const feels    = Math.round(d.main.feels_like);
+  const humidity = d.main.humidity;
+
+  elIcon.src = `https://openweathermap.org/img/wn/${d.weather[0].icon}@2x.png`;
+  elTemp.innerHTML = `${temp}<span class="temp-unit">${sym}</span>`;
+  elCond.textContent = d.weather[0].description;
+  elLoc.textContent  = `${d.name}, ${d.sys.country}`;
+  elExtra.textContent = `feels like ${feels}${sym.slice(1)}  ·  ${humidity}% humidity`;
+
+  elStatus.style.display = 'none';
+  elLoaded.classList.add('visible');
+}
+
+async function apiFetch(query) {
+  const url = `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${CONFIG.API_KEY}&units=${CONFIG.UNITS}`;
+  const res  = await fetch(url);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function loadWeather() {
+  if (CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
+    setStatus('add your openweathermap api key in the config section');
+    return;
+  }
+
+  // Try geolocation first, fall back to FALLBACK_CITY
+  try {
+    const pos = await new Promise((ok, fail) =>
+      navigator.geolocation
+        ? navigator.geolocation.getCurrentPosition(ok, fail, { timeout: 8000 })
+        : fail(new Error('unavailable'))
+    );
+    render(await apiFetch(`lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`));
+  } catch {
+    try {
+      render(await apiFetch(`q=${encodeURIComponent(CONFIG.FALLBACK_CITY)}`));
+    } catch (e) {
+      setStatus('— weather unavailable —');
+      console.warn('Weather fetch failed:', e.message);
+    }
+  }
+}
+
+loadWeather();
+setInterval(loadWeather, CONFIG.REFRESH_MS);
+</script>
+
+</body>
+</html>
