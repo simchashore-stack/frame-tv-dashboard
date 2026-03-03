@@ -245,41 +245,41 @@ function startClock() {
 
 // ── Backgrounds ──────────────────────────────────────────
 function startBackgrounds(list) {
-  if (!list.length) return; // stay on CSS fallback gradient
-
-  const layers   = [document.getElementById('bg-0'), document.getElementById('bg-1')];
+  const layers = [document.getElementById('bg-0'), document.getElementById('bg-1')];
   const duration = `${config.transitionMs}ms`;
   layers.forEach(l => l.style.transition = `opacity ${duration} ease`);
 
   let active = 0;
   let index  = 0;
 
-  // Show first image (fade in from dark)
-  preload(list[0], () => {
-    layers[0].style.backgroundImage = `url('${list[0]}')`;
-    layers[0].style.opacity = '1';
-    // Preload second in background
-    if (list.length > 1) preload(list[1]);
-  });
-
-  if (list.length < 2) return; // nothing to rotate
-
   function advance() {
+    if (list.length < 2) return;
     index = (index + 1) % list.length;
     const next = 1 - active;
-
     preload(list[index], () => {
       layers[next].style.backgroundImage = `url('${list[index]}')`;
       layers[active].style.opacity = '0';
       layers[next].style.opacity   = '1';
       active = next;
-
       preload(list[(index + 1) % list.length]);
     });
   }
 
-  setInterval(advance, config.backgroundIntervalMs);
+  // Always attach — even if images haven't loaded yet
   document.getElementById('skip-bg').addEventListener('click', advance);
+
+  if (!list.length) return;
+
+  // Show first image
+  preload(list[0], () => {
+    layers[0].style.backgroundImage = `url('${list[0]}')`;
+    layers[0].style.opacity = '1';
+    if (list.length > 1) preload(list[1]);
+  });
+
+  if (list.length > 1) {
+    setInterval(advance, config.backgroundIntervalMs);
+  }
 }
 
 // ── Quotes ───────────────────────────────────────────────
